@@ -1,0 +1,199 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum StatusBarbearia {
+  ATIVA
+  SUSPENSA
+  CANCELADA
+}
+
+enum StatusUsuario {
+  ATIVO
+  INATIVO
+}
+
+enum PerfilUsuario {
+  DONO
+  ADMIN
+}
+
+enum StatusBarbeiro {
+  ATIVO
+  FOLGA
+  INATIVO
+}
+
+enum StatusAgendamento {
+  PENDENTE
+  CONFIRMADO
+  CONCLUIDO
+  CANCELADO
+  NAO_COMPARECEU
+}
+
+enum StatusPagamento {
+  PENDENTE
+  PAGO
+  CANCELADO
+}
+
+enum TipoMovimentacao {
+  ENTRADA
+  SAIDA
+}
+
+model Barbearia {
+  id       String          @id @default(uuid())
+  nome     String
+  email    String          @unique
+  telefone String?
+  status   StatusBarbearia @default(ATIVA)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  usuarios      Usuario[]
+  clientes      Cliente[]
+  barbeiros     Barbeiro[]
+  servicos      Servico[]
+  agendamentos  Agendamento[]
+  movimentacoes Movimentacao[]
+
+  @@map("barbearias")
+}
+
+model Usuario {
+  id          String @id @default(uuid())
+  barbeariaId String
+
+  nome   String
+  email  String
+  senha  String
+  perfil PerfilUsuario @default(DONO)
+  status StatusUsuario @default(ATIVO)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+
+  @@unique([barbeariaId, email])
+  @@index([barbeariaId])
+  @@map("usuarios")
+}
+
+model Cliente {
+  id          String @id @default(uuid())
+  barbeariaId String
+
+  nome        String
+  telefone    String
+  email       String?
+  observacoes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  barbearia    Barbearia     @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  agendamentos Agendamento[]
+
+  @@index([barbeariaId])
+  @@index([barbeariaId, nome])
+  @@map("clientes")
+}
+
+model Barbeiro {
+  id          String @id @default(uuid())
+  barbeariaId String
+
+  nome     String
+  telefone String?
+  status   StatusBarbeiro @default(ATIVO)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  barbearia    Barbearia     @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  agendamentos Agendamento[]
+
+  @@index([barbeariaId])
+  @@map("barbeiros")
+}
+
+model Servico {
+  id          String @id @default(uuid())
+  barbeariaId String
+
+  nome      String
+  descricao String?
+  preco     Decimal @db.Decimal(10, 2)
+  duracao   Int
+  ativo     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  barbearia    Barbearia     @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  agendamentos Agendamento[]
+
+  @@index([barbeariaId])
+  @@map("servicos")
+}
+
+model Agendamento {
+  id          String  @id @default(uuid())
+  barbeariaId String
+  clienteId   String
+  barbeiroId  String?
+  servicoId   String
+
+  dataHora DateTime
+  valor    Decimal  @db.Decimal(10, 2)
+
+  status    StatusAgendamento @default(PENDENTE)
+  pagamento StatusPagamento   @default(PENDENTE)
+
+  observacoes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  cliente   Cliente   @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  barbeiro  Barbeiro? @relation(fields: [barbeiroId], references: [id], onDelete: SetNull)
+  servico   Servico   @relation(fields: [servicoId], references: [id], onDelete: Restrict)
+
+  movimentacao Movimentacao?
+
+  @@index([barbeariaId])
+  @@index([barbeariaId, dataHora])
+  @@index([clienteId])
+  @@index([barbeiroId])
+  @@map("agendamentos")
+}
+
+model Movimentacao {
+  id            String  @id @default(uuid())
+  barbeariaId   String
+  agendamentoId String? @unique
+
+  tipo      TipoMovimentacao
+  descricao String
+  valor     Decimal          @db.Decimal(10, 2)
+  data      DateTime         @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  barbearia   Barbearia    @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  agendamento Agendamento? @relation(fields: [agendamentoId], references: [id], onDelete: SetNull)
+
+  @@index([barbeariaId])
+  @@index([barbeariaId, data])
+  @@map("movimentacoes")
+}
