@@ -21,4 +21,20 @@ export class AuthController {
 
     return this.authService.register(data);
   }
+
+  @Post("login")
+  async login(
+    @Body()
+    data: {
+      email: string;
+      senha: string;
+    },
+  ) {
+    console.log("LOGIN BODY:", data);
+
+    return this.authService.login(
+      data.email,
+      data.senha,
+    );
+  }
 }
