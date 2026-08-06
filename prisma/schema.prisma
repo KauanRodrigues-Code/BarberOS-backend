@@ -116,10 +116,15 @@ model Barbeiro {
   telefone String?
   status   StatusBarbeiro @default(ATIVO)
 
+  inicioExpediente String @default("09:00")
+  fimExpediente    String @default("18:00")
+  intervaloMinutos Int    @default(45)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  barbearia    Barbearia     @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+
   agendamentos Agendamento[]
 
   @@index([barbeariaId])

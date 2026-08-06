@@ -6,16 +6,27 @@ import {
 
 import { BarbeariasService } from "./barbearias.service";
 
+
 @Controller("barbearias")
 export class BarbeariasController {
+
   constructor(
     private readonly barbeariasService: BarbeariasService,
   ) {}
 
+
+
+  // ROTA PÚBLICA
   @Get("public/:slug")
   buscarPublica(
-    @Param("slug") slug: string,
+    @Param("slug")
+    slug: string,
   ) {
-    return this.barbeariasService.buscarPublica(slug);
+
+    return this.barbeariasService.buscarPublica(
+      slug,
+    );
+
   }
+
 }
