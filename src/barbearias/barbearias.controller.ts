@@ -1,4 +1,21 @@
-import { Controller } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+} from "@nestjs/common";
 
-@Controller('barbearias')
-export class BarbeariasController {}
+import { BarbeariasService } from "./barbearias.service";
+
+@Controller("barbearias")
+export class BarbeariasController {
+  constructor(
+    private readonly barbeariasService: BarbeariasService,
+  ) {}
+
+  @Get("public/:slug")
+  buscarPublica(
+    @Param("slug") slug: string,
+  ) {
+    return this.barbeariasService.buscarPublica(slug);
+  }
+}
